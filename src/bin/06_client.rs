@@ -14,7 +14,6 @@ struct FibonacciRpcClient {
     channel: Channel,
     consumer: lapin::Consumer,
     correlation_id: String,
-    connection: Connection,
 }
 
 impl FibonacciRpcClient {
@@ -52,7 +51,6 @@ impl FibonacciRpcClient {
         Ok(Self {
             callback_queue,
             channel,
-            connection,
             consumer,
             correlation_id,
         })
@@ -74,7 +72,6 @@ impl FibonacciRpcClient {
 
         while let Some(delivery) = self.consumer.next().await {
             let (_, reply) = delivery?;
-            println!("Saw reply for corr id {:?} with data  {:?}", reply.properties.correlation_id(), reply.data);
             if reply.properties.correlation_id().as_ref()
                 == Some(&self.correlation_id.clone().into())
             {
@@ -91,12 +88,16 @@ impl FibonacciRpcClient {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.len() != 1 {
+        panic!("You should provide exactly one number as argument");
+    }
+    let number: i32 = args[0].parse()?;
 
     println!("Connected");
 
     let mut client = FibonacciRpcClient::new().await?;
 
-    let res = client.call(30).await?;
+    let res = client.call(number).await?;
 
     println!("{:?}", res);
 

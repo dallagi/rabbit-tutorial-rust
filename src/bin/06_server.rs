@@ -7,7 +7,7 @@ use lapin::{
         ExchangeDeclareOptions, QueueDeclareOptions,
     },
     types::FieldTable,
-    Connection, ConnectionProperties,
+    BasicProperties, Connection, ConnectionProperties,
 };
 
 fn fib(n: i32) -> i32 {
@@ -63,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!(" [x] Received '{:?}'", message);
             let num: i32 = i32::from_le_bytes(message);
             let response = fib(num);
-
+            let correlation_id = delivery.properties.correlation_id().clone().unwrap();
             let reply_to = delivery.properties.reply_to().as_ref().unwrap();
 
             let _ = channel.basic_publish(
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 reply_to.as_str(),
                 BasicPublishOptions::default(),
                 response.to_le_bytes().to_vec(),
-                Default::default(),
+                BasicProperties::default().with_correlation_id(correlation_id),
             );
             let _ = channel.basic_ack(delivery.delivery_tag, BasicAckOptions::default());
         } else {
