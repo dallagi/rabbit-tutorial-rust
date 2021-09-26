@@ -2,8 +2,8 @@ use std::thread;
 use std::time::Duration;
 
 use futures_lite::stream::StreamExt;
-use lapin::{Connection, options::*, types::FieldTable};
 use lapin::ConnectionProperties;
+use lapin::{options::*, types::FieldTable, Connection};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -16,7 +16,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _queue = channel
         .queue_declare(
             "task_queue",
-            QueueDeclareOptions{ durable: true, ..QueueDeclareOptions::default() },
+            QueueDeclareOptions {
+                durable: true,
+                ..QueueDeclareOptions::default()
+            },
             FieldTable::default(),
         )
         .await?;
@@ -25,7 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .basic_consume(
             "task_queue",
             "my_consumer",
-            BasicConsumeOptions { no_ack: true, ..BasicConsumeOptions::default() },
+            BasicConsumeOptions {
+                no_ack: true,
+                ..BasicConsumeOptions::default()
+            },
             FieldTable::default(),
         )
         .await?;

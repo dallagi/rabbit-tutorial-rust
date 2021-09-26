@@ -1,15 +1,15 @@
 use std::env;
 
-use lapin::{BasicProperties, Connection, ConnectionProperties, options::{BasicPublishOptions, BasicQosOptions, QueueDeclareOptions}, types::FieldTable};
+use lapin::{
+    options::{BasicPublishOptions, BasicQosOptions, QueueDeclareOptions},
+    types::FieldTable,
+    BasicProperties, Connection, ConnectionProperties,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "amqp://127.0.0.1:5672/%2f";
-    let conn = Connection::connect(
-        &addr,
-        ConnectionProperties::default(),
-    )
-    .await?;
+    let conn = Connection::connect(&addr, ConnectionProperties::default()).await?;
 
     println!("Connected");
 
@@ -18,7 +18,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let queue = channel
         .queue_declare(
             "task_queue",
-            QueueDeclareOptions{ durable: true, ..QueueDeclareOptions::default() },
+            QueueDeclareOptions {
+                durable: true,
+                ..QueueDeclareOptions::default()
+            },
             FieldTable::default(),
         )
         .await?;
@@ -33,10 +36,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "hello",
             BasicPublishOptions::default(),
             message.as_bytes().to_vec(),
-            BasicProperties::default().with_delivery_mode(2)
+            BasicProperties::default().with_delivery_mode(2),
         )
-    .await?
-    .await?;
+        .await?
+        .await?;
 
     println!(" [x] Sent {:?}", message);
 

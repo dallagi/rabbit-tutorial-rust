@@ -1,18 +1,24 @@
-use lapin::{BasicProperties, Connection, ConnectionProperties, options::{BasicPublishOptions, QueueDeclareOptions}, types::FieldTable};
+use lapin::{
+    options::{BasicPublishOptions, QueueDeclareOptions},
+    types::FieldTable,
+    BasicProperties, Connection, ConnectionProperties,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "amqp://127.0.0.1:5672/%2f";
-    let conn = Connection::connect(
-        &addr,
-        ConnectionProperties::default(),
-    )
-    .await?;
+    let conn = Connection::connect(&addr, ConnectionProperties::default()).await?;
 
     println!("Connected");
 
     let channel = conn.create_channel().await?;
-    let queue = channel.queue_declare("hello", QueueDeclareOptions::default(), FieldTable::default()).await?;
+    let queue = channel
+        .queue_declare(
+            "hello",
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
 
     println!("Declared queue {:?}", queue);
 
@@ -25,8 +31,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             payload.to_vec(),
             BasicProperties::default(),
         )
-    .await?
-    .await?;
+        .await?
+        .await?;
 
     println!(" [x] Sent hello world!");
 

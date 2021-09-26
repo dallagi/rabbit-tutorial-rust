@@ -1,6 +1,6 @@
 use futures_lite::stream::StreamExt;
-use lapin::{Connection, options::*, types::FieldTable};
 use lapin::ConnectionProperties;
+use lapin::{options::*, types::FieldTable, Connection};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +29,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     while let Some(delivery) = consumer.next().await {
         let (_channel, delivery) = delivery.expect("error in consumer");
-        println!("Received {:?}", std::str::from_utf8(&delivery.data).unwrap_or("[ERROR]"));
+        println!(
+            "Received {:?}",
+            std::str::from_utf8(&delivery.data).unwrap_or("[ERROR]")
+        );
         // delivery.ack(BasicAckOptions::default()).await.expect("ack");
     }
 
